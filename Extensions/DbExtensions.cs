@@ -1,4 +1,6 @@
 using ChatApplication.Data;
+using ChatApplication.Persistence.Context;
+using ChatApplication.Persistence.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,5 +17,8 @@ public static class DbExtensions
         builder.Services
             .AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        builder.Services.AddSingleton<ISqlLiteContext, SqlLiteContext>();
+        builder.Services.AddSingleton<DummyDataGenerator>();
     }
 }

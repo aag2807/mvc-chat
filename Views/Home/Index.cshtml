@@ -1,4 +1,4 @@
-﻿<main class="flex flex-row min-w-screen min-h-screen bg-[#202329d9] rounded-3xl p-8">
+﻿<main class="flex flex-row min-w-screen min-h-screen bg-[#202329d9] rounded-3xl p-8" x-data="chat">
     <section class="flex flex-col">
         <form action="" class="relative min-w-[400px] pr-3">
             <input
@@ -10,28 +10,23 @@
             </div>
         </form>
 
-        <template id="chat-item">
-
-        </template>
-
         <li class="mt-10 flex flex-col gap-4" id="chat-list">
-            <ol class="flex flex-row min-h-[130px] bg-[#2e333d] w-full rounded-3xl px-5">
-                <div class="flex flex-col items-center justify-center" id="image-item-1">
-                    <img
-                        src="https://img.freepik.com/premium-photo/sketch-chair-with-word-ergonomic-bottom_900370-24948.jpg?w=996"
-                        class="h-[90px] rounded-2xl">
-                </div>
-                <div class="flex flex-col justify-center items-center pl-3 truncate">
-                    <div class="flex items-center flex-col h-[90px] py-3 truncate">
-                        <p class="text-white text-left w-full truncate text-[18px]">Office Chat</p>
-                        <p class="text-gray-500 truncate mt-auto">I want to ask you to pick up</p>
+            <template x-for="group in groups">
+                <ol class="flex flex-row min-h-[130px] bg-[#2e333d] w-full rounded-3xl px-5 transition hover:opacity-75 hover:scale-[0.95] cursor-pointer">
+                    <div class="flex flex-col items-center justify-center" id="image-item-1">
+                        <img
+                            src="https://img.freepik.com/premium-photo/sketch-chair-with-word-ergonomic-bottom_900370-24948.jpg?w=996"
+                            class="h-[90px] rounded-2xl">
                     </div>
-                </div>
-                <div class="flex flex-col">
-                    <p>4m</p>
+                    <div class="flex flex-col justify-center items-center pl-5 truncate">
+                        <div class="flex items-center flex-col h-[90px] py-3 truncate">
+                            <p class="text-white text-left w-full truncate text-[18px]" x-text="group.name"></p>
+                            <p class="text-gray-500 font-light text-[14px] truncate mt-2" x-text="group.description"></p>
+                        </div>
+                    </div>
+                </ol>
 
-                </div>
-            </ol>
+            </template>
         </li>
 
     </section>
@@ -44,15 +39,53 @@
 @section Scripts
 {
     <script>
-        const chatLists = document.querySelector("#chat-list");
-        
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("hubs/chat")
-            .build();
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('chat', () => ({
+                groups: [],
+                messages: [],
+                selectedGroupId: null,
+                newMessage: '',
+                connection: null,
 
-        connection.on('LoadChatList', (value) => 
-        {
-        
-        } );
-    </script>
+                init() {
+                    this.connection = new signalR.HubConnectionBuilder()
+                        .withUrl("/hubs/chat")
+                        .build();
+
+                    this.connection.on('LoadChatList', this.onLoadChatList.bind(this));
+                    this.connection.on('ReceiveMessage', this.onReceiveMessage.bind(this));
+
+                    this.connection.start()
+                        .then(() => this.loadGroups())
+                        .catch(err => console.error(err.toString()));
+                },
+
+                onLoadChatList(chatList) {
+                    this.groups = chatList;
+                },
+
+                onReceiveMessage(message) {
+                    if (message.chatGroupId === this.selectedGroupId) {
+                        this.messages.push(message);
+                    }
+                },
+
+                async loadGroups() {
+                    await this.connection.invoke('LoadChatList');
+                },
+
+                async selectGroup(groupId) {
+                    this.selectedGroupId = groupId;
+                    this.messages = await this.connection.invoke('LoadMessages', groupId);
+                },
+
+                async sendMessage() {
+                    if (this.newMessage.trim() && this.selectedGroupId) {
+                        await this.connection.invoke('SendMessage', this.selectedGroupId, this.newMessage);
+                        this.newMessage = '';
+                    }
+                }
+            }))
+        })
+</script>
 }
