@@ -1,0 +1,37 @@
+@namespace ChatApplication.Views.Components
+
+<aside class="flex flex-col min-h-screen w-[150px] px-2 py-5 items-center text-[25px] gap-3 bg-[#131313]">
+    <div class="text-white font-bold text-center text-[52px]">
+        CH
+    </div>
+    
+    @foreach (object item in _sidebarItems)
+    {
+        <div class="flex flex-col items-center justify-center py-5 cursor-pointer transition hover:scale-[0.9] hover:opacity-75">
+            <i class="@(item.GetType().GetProperty("Icon")?.GetValue(item)!) text-white"></i>
+            <label class="text-center text-white text-[15px] pt-2 cursor-pointer">@(item.GetType().GetProperty("Title")?.GetValue(item)!)</label>
+        </div>
+        
+        @if ((bool)item.GetType().GetProperty("ShowLine")?.GetValue(item)!)
+        {
+            <div class="min-h-[1px] bg-white w-[90px]"></div>
+        }
+    }
+   
+    <div class="mt-auto flex flex-col items-center justify-center py-5 cursor-pointer transition hover:scale-[0.9] hover:opacity-75">
+        <i class="fa-solid fa-gear text-white"></i>
+        <label class="text-center text-white text-[15px] pt-2 cursor-pointer">Settings</label>
+    </div>
+</aside>
+
+@code {
+    private readonly List<object> _sidebarItems =
+    [
+        new { Icon = "fa-solid fa-comments", Title = "All Chats", ShowLine = false },
+        new { Icon = "fa-solid fa-folder", Title = "Work", ShowLine = false },
+        new { Icon = "fa-solid fa-folder", Title = "Meet", ShowLine = true },
+        new { Icon = "fa-solid fa-calendar-days", Title = "Calendar", ShowLine = false },
+        new { Icon = "fa-solid fa-square-poll-vertical", Title = "Rating", ShowLine = false },
+        new { Icon = "fa-solid fa-bookmark", Title = "Saved", ShowLine = false }
+    ];
+}

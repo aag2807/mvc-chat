@@ -1,6 +1,6 @@
 namespace ChatApplication.Persistence.Chat;
 
-public class ChatRepository
+public sealed class ChatRepository : IChatRepository
 {
     
 }

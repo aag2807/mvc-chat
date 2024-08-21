@@ -1,8 +1,58 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<main class="flex flex-row min-w-screen min-h-screen bg-[#202329d9] rounded-3xl p-8">
+    <section class="flex flex-col">
+        <form action="" class="relative min-w-[400px] pr-3">
+            <input
+                placeholder="Search..."
+                type="text"
+                class="bg-[#2e333d] outline-0 focus:outline-0 py-4 px-6 rounded-lg caret-white text-white indent-8 pl-3 font-light w-full ">
+            <div class="absolute flex items-center justify-center top-[50%] translate-y-[-50%] left-[11px] bg-[#2e333d]">
+                <i class="fa-solid fa-magnifying-glass text-white text-[20px]"></i>
+            </div>
+        </form>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+        <template id="chat-item">
+
+        </template>
+
+        <li class="mt-10 flex flex-col gap-4" id="chat-list">
+            <ol class="flex flex-row min-h-[130px] bg-[#2e333d] w-full rounded-3xl px-5">
+                <div class="flex flex-col items-center justify-center" id="image-item-1">
+                    <img
+                        src="https://img.freepik.com/premium-photo/sketch-chair-with-word-ergonomic-bottom_900370-24948.jpg?w=996"
+                        class="h-[90px] rounded-2xl">
+                </div>
+                <div class="flex flex-col justify-center items-center pl-3 truncate">
+                    <div class="flex items-center flex-col h-[90px] py-3 truncate">
+                        <p class="text-white text-left w-full truncate text-[18px]">Office Chat</p>
+                        <p class="text-gray-500 truncate mt-auto">I want to ask you to pick up</p>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <p>4m</p>
+
+                </div>
+            </ol>
+        </li>
+
+    </section>
+
+    <section class="flex flex-col">
+
+    </section>
+</main>
+
+@section Scripts
+{
+    <script>
+        const chatLists = document.querySelector("#chat-list");
+        
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("hubs/chat")
+            .build();
+
+        connection.on('LoadChatList', (value) => 
+        {
+        
+        } );
+    </script>
+}
