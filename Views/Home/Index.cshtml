@@ -11,15 +11,15 @@
         </form>
 
         <li class="mt-10 flex flex-col gap-4" id="chat-list">
-            <template x-for="group in groups">
-                <ol class="flex flex-row min-h-[130px] bg-[#2e333d] w-full rounded-3xl px-5 transition hover:opacity-75 hover:scale-[0.95] cursor-pointer">
+            <template x-for="(group, index) in groups">
+                <ol :class="{'bg-[#2e333d]' : selectedGroupId == group.id}" x-on:click="selectChat(group.id, index)" class="flex flex-row min-h-[110px]  w-full rounded-3xl px-5 transition hover:opacity-75 hover:scale-[0.95] cursor-pointer">
                     <div class="flex flex-col items-center justify-center" id="image-item-1">
                         <img
                             src="https://img.freepik.com/premium-photo/sketch-chair-with-word-ergonomic-bottom_900370-24948.jpg?w=996"
-                            class="h-[90px] rounded-2xl">
+                            class="h-[70px] rounded-2xl">
                     </div>
                     <div class="flex flex-col justify-center items-center pl-5 truncate">
-                        <div class="flex items-center flex-col h-[90px] py-3 truncate">
+                        <div class="flex items-center flex-col h-[70px] py-3 truncate">
                             <p class="text-white text-left w-full truncate text-[18px]" x-text="group.name"></p>
                             <p class="text-gray-500 font-light text-[14px] truncate mt-2" x-text="group.description"></p>
                         </div>
@@ -31,8 +31,42 @@
 
     </section>
 
-    <section class="flex flex-col">
+    <section data-role="chat-ui" class="flex flex-col px-8 w-full">
+        <div class="flex flex-row items-center w-full">
+            <div class="flex flex-col" x-show="selectedChatIndex >= 0">
+                <h5 class="text-white font-semibold text-2xl" x-text="groups[selectedChatIndex].name"></h5>
+                <p class="text-gray-500 font-light text-[14px]">25 members, 2 online</p>
+            </div>
 
+            <ul class="flex flex-row gap-8 ml-auto text-gray-500 text-[20px]">
+                <li>
+                    <i class="fa-solid fa-magnifying-glass transition hover:scale-[1.05] hover:text-white cursor-pointer"></i>
+                </li>
+                <li>
+                    <i class="fa-solid fa-phone transition hover:scale-[1.05] hover:text-white cursor-pointer"></i>
+                </li>
+                
+                <li>
+                    <i class="fa-solid fa-window-maximize transition hover:scale-[1.05] hover:text-white cursor-pointer"></i>
+                </li>
+                <li>
+                    <i class="fa-solid fa-ellipsis-vertical transition hover:scale-[1.05] hover:text-white cursor-pointer"></i>
+                </li>
+            </ul>
+        </div>
+        
+        <div data-role="chat-ui_message-window" class="flex flex-col h-full w-full">
+            <div class="flex flex-row relative mt-auto h-[60px] items-center">
+                <div data-role="icon-container" class="absolute top-[50%] translate-y-[-50%] left-[20px]">
+                    <i class=" fa-solid fa-paperclip cursor-pointer transition text-gray-100 hover:scale-[1.1]"></i>
+                </div>
+                <input 
+                    x-bind:value="messageToSend" 
+                    type="text" class="outline-0 focus:outline-0 h-[50px] w-full text-gray-200 bg-transparent pl-12 pr-7"
+                    placeholder="Your message..."
+                >
+            </div>
+        </div>
     </section>
 </main>
 
@@ -46,6 +80,8 @@
                 selectedGroupId: null,
                 newMessage: '',
                 connection: null,
+                selectedChatIndex: -1,
+                messageToSend: '',
 
                 init() {
                     this.connection = new signalR.HubConnectionBuilder()
@@ -62,12 +98,24 @@
 
                 onLoadChatList(chatList) {
                     this.groups = chatList;
+                    this.selectChat(chatList[0].id, 0);
                 },
 
                 onReceiveMessage(message) {
                     if (message.chatGroupId === this.selectedGroupId) {
                         this.messages.push(message);
                     }
+                },
+                
+                onReceiveMessages(messages) {
+                    this.messages = messages;
+                    console.log('messages', messages)
+                },
+                
+                selectChat(id, index) {
+                    this.selectedChatIndex = index;
+                    this.selectedGroupId = id;
+                    this.connection.send("GetMessages", id);
                 },
 
                 async loadGroups() {

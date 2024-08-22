@@ -33,4 +33,10 @@ public sealed class ChatHub : Hub
         IEnumerable<ChatGroup> chats = await _chatRepository.LoadChatList().ConfigureAwait(true);
         await Clients.Caller.SendAsync("LoadChatList", chats);
     }
+
+    public async Task GetMessages(int groupId)
+    {
+        IEnumerable<Message> messages = await _chatRepository.LoadChatMessages(groupId).ConfigureAwait(true);
+        await Clients.Caller.SendAsync("ReceiveMessages", messages).ConfigureAwait(true);
+    }
 }
